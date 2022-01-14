@@ -1,0 +1,200 @@
+---
+# Source: apm-server/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: apm-server-apm-server
+  annotations:
+  labels:
+    app: "apm-server-apm-server"
+    chart: "apm-server-7.14.1"
+    heritage: "Helm"
+    release: "apm-server"
+---
+# Source: apm-server/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apm-server-apm-server-config
+  labels:
+    app: "apm-server-apm-server"
+    chart: "apm-server-7.14.1"
+    heritage: "Helm"
+    release: "apm-server"
+data:
+  apm-server.yml: |
+    apm-server:
+      host: "0.0.0.0:8200"
+      max_event_size: 1457600
+      max_header_size: 485760
+      idle_timeout: 90s
+      read_timeout: 300s
+      write_timeout: 300s      
+    queue: {}
+    xpack.monitoring.enabled: true
+    output.elasticsearch:
+      hosts: ["https://elasticsearch-master:9200"]
+      username: "${ELASTICSEARCH_USERNAME}"
+      password: "${ELASTICSEARCH_PASSWORD}"
+      ## If SSL is enabled
+      protocol: https
+      ssl.certificate_authorities:
+        - /usr/share/apm-server/config/certs/ca.pem
+      ssl.verification_mode: certificate
+      worker: 5
+      bulk_max_size: 10000
+---
+# Source: apm-server/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: apm-server-apm-server-cluster-role
+  labels:
+    app: "apm-server-apm-server"
+    chart: "apm-server-7.14.1"
+    heritage: "Helm"
+    release: "apm-server"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: apm-server/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: apm-server-apm-server-cluster-role-binding
+  labels:
+    app: "apm-server-apm-server"
+    chart: "apm-server-7.14.1"
+    heritage: "Helm"
+    release: "apm-server"
+roleRef:
+  kind: ClusterRole
+  name: apm-server-apm-server-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: apm-server-apm-server
+  namespace: default
+---
+# Source: apm-server/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: apm-server-apm-server
+  labels:
+    app: apm-server
+    release: "apm-server"
+    heritage: Helm
+spec:
+  type: NodePort
+  ports:
+    - port: 8200
+      nodePort: 30202
+      protocol: TCP
+      name: http
+      targetPort: 8200
+  selector:
+    app: apm-server
+    release: "apm-server"
+---
+# Source: apm-server/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apm-server-apm-server
+  labels:
+    app: apm-server
+    release: "apm-server"
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: apm-server
+      release: "apm-server"
+  template:
+    metadata:
+      labels:
+        app: apm-server
+        release: "apm-server"
+      annotations:
+        
+        configChecksum: e65878703545ec2cb4292b3dbf1aab4b74974645c8bb35cf073a4eb5a8e5544
+    spec:
+      securityContext:
+          fsGroup: 1000
+          runAsGroup: 0
+          runAsUser: 1000
+      serviceAccountName: apm-server-apm-server
+      volumes:
+        - name: elastic-certificate-pem
+          secret:
+            secretName: elastic-certificates-8g7dktfb4t
+        - name: apm-server-config
+          configMap:
+            name: apm-server-apm-server-config
+            defaultMode: 0600
+      containers:
+      - name: apm-server
+        image: "docker.elastic.co/apm/apm-server:7.14.1"
+        imagePullPolicy: "IfNotPresent"
+        env:
+          
+          - name: ELASTICSEARCH_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: elastic-credentials
+          - name: ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: elastic-credentials
+        securityContext:
+          privileged: false
+          runAsGroup: 0
+          runAsNonRoot: true
+          runAsUser: 1000
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        ports:
+          - containerPort: 8200
+            name: http
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+          - name: elastic-certificate-pem
+            mountPath: /usr/share/apm-server/config/certs
+          - name: apm-server-config
+            mountPath: /usr/share/apm-server/apm-server.yml
+            subPath: apm-server.yml
+            readOnly: true
+
