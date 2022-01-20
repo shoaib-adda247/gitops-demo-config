@@ -1,0 +1,52 @@
+{
+  "kind": "Backup",
+  "apiVersion": "velero.io/v1",
+  "metadata": {
+    "name": "staging",
+    "namespace": "velero",
+    "selfLink": "/apis/velero.io/v1/namespaces/velero/backups/staging",
+    "uid": "5192ba3a-f611-4984-b0ac-d8a8dcf1cb91",
+    "resourceVersion": "238992996",
+    "generation": 2,
+    "creationTimestamp": "2021-12-22T05:49:10Z",
+    "labels": {
+      "velero.io/storage-location": "default"
+    },
+    "annotations": {
+      "velero.io/source-cluster-k8s-gitversion": "v1.16.15-eks-e1a842",
+      "velero.io/source-cluster-k8s-major-version": "1",
+      "velero.io/source-cluster-k8s-minor-version": "16+"
+    }
+  },
+  "spec": {
+    "metadata": {
+      
+    },
+    "includedNamespaces": [
+      "staging"
+    ],
+    "ttl": "720h0m0s",
+    "hooks": {
+      
+    },
+    "storageLocation": "default",
+    "volumeSnapshotLocations": [
+      "default"
+    ],
+    "defaultVolumesToRestic": false
+  },
+  "status": {
+    "version": 1,
+    "formatVersion": "1.1.0",
+    "expiration": "2022-01-21T05:49:10Z",
+    "phase": "Completed",
+    "startTimestamp": "2021-12-22T05:49:10Z",
+    "completionTimestamp": "2021-12-22T05:49:16Z",
+    "volumeSnapshotsAttempted": 6,
+    "volumeSnapshotsCompleted": 6,
+    "progress": {
+      "totalItems": 504,
+      "itemsBackedUp": 504
+    }
+  }
+}

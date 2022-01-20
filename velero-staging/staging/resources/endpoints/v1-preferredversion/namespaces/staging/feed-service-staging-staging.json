@@ -1,0 +1,1 @@
+{"apiVersion":"v1","kind":"Endpoints","metadata":{"creationTimestamp":"2021-08-23T12:40:09Z","labels":{"app":"feed-service-staging-staging"},"name":"feed-service-staging-staging","namespace":"staging","resourceVersion":"150385188","selfLink":"/api/v1/namespaces/staging/endpoints/feed-service-staging-staging","uid":"6389a1aa-b7bc-4086-b43c-c07221c3400a"}}
