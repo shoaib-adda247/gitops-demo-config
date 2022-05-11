@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: flask-app-container
-        image: kunchalavikram/deployment:10-staging
+        image: shoaib74/socialclient:1-staging
         ports:
         - containerPort: 5000
 ---
@@ -30,4 +30,3 @@ spec:
     nodePort: 32000
   selector:
     app: flask-app
-
