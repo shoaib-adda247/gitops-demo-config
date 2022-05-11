@@ -1,0 +1,50 @@
+def COLOR_MAP = [
+'SUCCESS': 'good',
+'FAILURE': 'danger',
+]
+pipeline {
+    agent any
+    stages {
+     stage("Deploy To EKS"){
+       steps {
+         script{
+                   sh 'kubectl apply -f cicd/hpa.yml'
+                   sh 'export BUILD_NUMBER="$BUILD_NUMBER"'
+                   sh 'export appname=$appname'
+                   sh 'export envName=$envName'
+                   sh 'export branch=$branch'
+                   sh 'envsubst < cicd/deployment.yml | kubectl apply -f - '
+                   sh '''
+                  if ! kubectl rollout status deployment <deployment-name>; then
+                     kubectl rollout undo deployment deployment-name
+                     kubectl rollout status deployment deployment-name
+                     exit 1
+                  fi
+                  '''
+                   sh 'kubectl apply -f cicd/service.yml'
+             }
+        }
+     }
+   }
+     post {
+        always {
+           script {
+ //                 ":::::::::::GIT_COMMITTER_NAME::::::::::::::::::::::::"
+                  if ("${env.envName}" == 'production') {
+	                GIT_COMMITTER_MESSAGE = sh(returnStdout: true, script: "git log --format=format:%s -1").trim()
+	                GIT_COMMITTER_NAME = sh(returnStdout: true, script: "git show -s --pretty=%an").trim()
+	                slackSend channel: '#production-jenkins',
+	                color: COLOR_MAP[currentBuild.currentResult],
+	                message: "*${currentBuild.currentResult}:*  ${env.JOB_NAME}\nDeployed Branch:- ${env.GIT_BRANCH}.\nCommit id:- ${GIT_COMMIT}.\nGit URl: ${env.GIT_URL}.\nCommitter Name:- ${GIT_COMMITTER_NAME}.\n Commit Message:- ${GIT_COMMITTER_MESSAGE}.\n More info at: ${env.BUILD_URL}"
+	            }
+	            else{
+	                 GIT_COMMITTER_MESSAGE = sh(returnStdout: true, script: "git log --format=format:%s -1").trim()
+	                 GIT_COMMITTER_NAME = sh(returnStdout: true, script: "git show -s --pretty=%an").trim()
+	                 slackSend channel: '#pre-prod-jenkins',
+	                 color: COLOR_MAP[currentBuild.currentResult],
+	                 message: "*${currentBuild.currentResult}:*  ${env.JOB_NAME}\nDeployed Branch:- ${env.GIT_BRANCH}.\nCommit id:- ${GIT_COMMIT}.\nGit URl: ${env.GIT_URL}.\nCommitter Name:- ${GIT_COMMITTER_NAME}.\n Commit Message:- ${GIT_COMMITTER_MESSAGE}.\n More info at: ${env.BUILD_URL}"
+	             }
+	           }
+          }
+        }
+     }

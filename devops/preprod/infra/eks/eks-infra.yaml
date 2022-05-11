@@ -1,0 +1,24 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: Preprod-Adda
+  region: us-east-1
+
+vpc:
+  id: "vpc-08bf906c"
+  cidr: "172.31.0.0/16"
+  subnets:
+    private:
+      us-east-1d:
+          id: "subnet-0651066f1cbb6b7f3"
+          cidr: "172.31.112.0/20"
+      us-east-1a:
+          id: "subnet-074b1a1b23c639c86"
+          cidr: "172.31.96.0/20"
+    public:
+      us-east-1a:
+          id: "subnet-30d27b68"
+          cidr: "172.31.16.0/20"
+      us-east-1d:
+          id: "subnet-2fb02659"
+          cidr: "172.31.0.0/20"
