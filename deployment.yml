@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: flask-app-container
-        image: 490891715875.dkr.ecr.us-east-1.amazonaws.com/deployment:40-staging-master
+        image: 490891715875.dkr.ecr.us-east-1.amazonaws.com/deployment:41-master-staging-
         ports:
         - containerPort: 5000
 ---
