@@ -1,2 +1,2 @@
-# elk-stack
-for cp and adda monitoring
+# ADDA247 Staging kubernetes Deployment Manifest
+Staging Manifest for adda247 k8s

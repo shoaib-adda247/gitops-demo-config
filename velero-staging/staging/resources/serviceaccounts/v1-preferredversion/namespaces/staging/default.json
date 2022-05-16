@@ -1,1 +1,0 @@
-{"apiVersion":"v1","kind":"ServiceAccount","metadata":{"creationTimestamp":"2020-12-24T07:52:38Z","name":"default","namespace":"staging","resourceVersion":"10124345","selfLink":"/api/v1/namespaces/staging/serviceaccounts/default","uid":"2d8d9e44-bc93-40bb-a7b2-6aefd6e6113b"},"secrets":[{"name":"default-token-bcrnx"}]}
